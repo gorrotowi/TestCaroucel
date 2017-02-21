@@ -2,13 +2,16 @@ package com.gorrotowi.testcarouselfragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
+import com.bumptech.glide.Glide;
 import com.gorrotowi.testcarouselfragments.caroucel.Carousel;
 import com.gorrotowi.testcarouselfragments.caroucel.CarouselAdapter;
 import com.gorrotowi.testcarouselfragments.caroucel.CarouselItem;
@@ -20,6 +23,7 @@ public class FragmentTwo extends Fragment {
 
     private static final String TAG = FragmentTwo.class.getSimpleName();
     Carousel carousel;
+    View rootView;
     private ArrayList<CarouselItem> mImages;
     private CarouselItem lastCarouselItem;
     private ImageView statusIv;
@@ -40,7 +44,7 @@ public class FragmentTwo extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_fragment_two, container, false);
+        rootView = inflater.inflate(R.layout.fragment_fragment_two, container, false);
 
 
         carousel = (Carousel) rootView.findViewById(R.id.carousel);
@@ -62,6 +66,7 @@ public class FragmentTwo extends Fragment {
                                             public void onItemClick(CarouselAdapter<?> parent, CarouselItem item, int position, long id) {
                                                 lastCarouselItem = item;
                                                 Log.e(TAG, "onDrag: Action Ended");
+                                                dropItem();
                                             }
                                         }
         );
@@ -88,6 +93,17 @@ public class FragmentTwo extends Fragment {
         return rootView;
     }
 
+    private void dropItem() {
+        CarouselItem item = new CarouselItem(getActivity());
+        if (lastCarouselItem.getImageUrl() != null)
+            Glide.with(this).load(lastCarouselItem.getImageUrl()).crossFade(0).into(item.getmImage());
+        else if (lastCarouselItem.getDrawable() != 0)
+            item.getmImage().setImageDrawable(ContextCompat.getDrawable(getActivity(), lastCarouselItem.getDrawable()));
+        LinearLayout container = (LinearLayout) rootView.findViewById(R.id.topleft);
+        container.removeAllViews();
+        container.addView(item);
+    }
+
     class DragListener implements View.OnDragListener {
         @Override
         public boolean onDrag(View v, DragEvent event) {
@@ -110,6 +126,7 @@ public class FragmentTwo extends Fragment {
                     break;
                 case DragEvent.ACTION_DRAG_ENDED:
                     Log.e(TAG, "onDrag: Action Ended");
+                    dropItem();
                     break;
                 default:
                     break;
